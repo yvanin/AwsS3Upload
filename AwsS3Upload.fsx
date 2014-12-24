@@ -11,10 +11,12 @@ let RESULT_SUCCESS = 0
 let RESULT_ERROR = 1
 
 let upload (options: Options) =
-    let mutable region = Amazon.RegionEndpoint.GetBySystemName(options.RegionEndpoint)
-    if region.DisplayName = "Unknown" then
-        printfn "Region %s not found. Using us-east-1." options.RegionEndpoint
-        region <- Amazon.RegionEndpoint.USEast1
+    let region =
+        match Amazon.RegionEndpoint.GetBySystemName(options.RegionEndpoint) with
+        | region when region.DisplayName <> "Unknown" -> region
+        | _ ->
+            printfn "Region %s not found. Using us-east-1." options.RegionEndpoint
+            Amazon.RegionEndpoint.USEast1
 
     let s3client = new Amazon.S3.AmazonS3Client(options.AccessKey, options.SecretKey, region)
 
